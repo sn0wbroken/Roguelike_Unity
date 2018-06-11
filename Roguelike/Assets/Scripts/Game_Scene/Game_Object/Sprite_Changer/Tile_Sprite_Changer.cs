@@ -2,28 +2,34 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UniRx;
+using UnityEngine.U2D;
 
 /// <summary>
 /// 地形に合わせた画像を床に貼る
 /// </summary>
 public class Tile_Sprite_Changer : MonoBehaviour {
     /// <summary>
-    /// 床に貼る画像を格納
+    /// 床画像をまとめたもの
     /// </summary>
     [SerializeField]
-    Sprite[] tile_sprite = new Sprite[(int)eTile_State.Finish];
+    SpriteAtlas Tile_atlas;
+    /// <summary>
+    /// いくつのものをまとめたかを格納
+    /// </summary>
+    int sprite_count;
+    /// <summary>
+    /// まとめた画像の１つずつを格納
+    /// </summary>
+    Sprite[] sprite_array;
+
 
     void Start() {
-        var dungeon_manager = Dungeon_Manager.Instance;
-
-        // 草原の床
-        dungeon_manager.tile_state.Where(tile_type => tile_type == eTile_State.Grass).Subscribe(tile_type =>
-            Set_Sprite((int)tile_type)
-        ).AddTo(this);
-        // 石の床
-        dungeon_manager.tile_state.Where(tile_type => tile_type == eTile_State.Stone).Subscribe(tile_type =>
-            Set_Sprite((int)tile_type)
-        ).AddTo(this);
+        Tile_atlas = Resources.Load<SpriteAtlas>("Dungeon\\Tiles_Atlas");
+        sprite_count = Tile_atlas.spriteCount;
+        sprite_array = new Sprite[sprite_count];
+        Tile_atlas.GetSprites(sprite_array);
+        var enemy_status = gameObject.GetComponent<Enemy_Controller>().enemy_status;
+        var actor_manager = Actor_Manager.Instance;
     }
 
     /// <summary>
@@ -32,6 +38,6 @@ public class Tile_Sprite_Changer : MonoBehaviour {
     /// <param name="type">spritesの要素数</param>
     void Set_Sprite(int type) {
         var sprite_renderer = gameObject.GetComponent<SpriteRenderer>();
-        sprite_renderer.sprite = tile_sprite[type];
+        sprite_renderer.sprite = sprite_array[type];
     }
 }
